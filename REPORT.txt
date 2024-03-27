@@ -1,0 +1,114 @@
+REPORT
+Text Recognition with Transformer Models
+
+Test Case -2
+Introduction
+Optical Character Recognition (OCR) is the process of converting images containing text into machine-readable format. This report proposes a model based on Transformer architectures for tackling OCR for General and as well as Specific. We will discuss the chosen approach, strategy, and evaluation metrics for model performance.
+
+For The GENERAL DATASET:-
+Implementation process:
+There are several steps for the implementation of this project using a Encoder-Decoder net:
+First the necessary libraries must be imported and all variables and hyperparameters must be defined. The data is going to be loaded and preprocessed (both labels and images), after that the model will be defined and everything will be ready for training. And then , the model will be trained, the results will be analyzed and the testing process starts.
+
+Dataset:
+The data used in this project has 3 folders:
+1.	CSV
+2.	Train
+3.	Test
+4.	Validation
+The data split part has been done by the dataset creator and that’s why there are Train, Test and Validation folders. The CSV folder has 3 .csv files for all 3 partitions. Each csv file has 2 columns, one for labels and one for the image path.
+
+WORKING:-
+The train labels are first loaded from the CSV file. Then, the unique characters are extracted from them. These must be extracted because the number of classes are the length of number of characters. The reason behind this is that the model must predict characters (because a sequence to sequence approach is used) and the options for the model to select from are limited to the characters in the dataset which are unique characters. However, this is not the parameter that is going to be passed to the model. In the next step, we must define 2 dictionaries. One for mapping characters to numerical values and another for mapping numerical values to characters.
+First, the CSV files were opened. The labels were extracted and preprocessed from them. Then the path of images were read and preprocessed.
+CTC loss:
+A Connectionist Temporal Classification Loss, or CTC Loss, is designed for tasks where we need alignment between sequences, but where that alignment is difficult.. It calculates a loss between the prediction and actual label.
+Model Creation:
+The model is the main component an AI application. As I mentioned earlier, the model I used for this project was a encoder-decoder network. The input length of the model is (image_height, image_width, 1). As also written in the hyperparameters definition part, the height is set to 50 and the width to 200. The one at the end is because the images are in black and white. If they were in color, it must have been set to 3 because of image channels (red, green and blue).
+The model also gets another input which is for labels. This is because of having a custom loss layer which I will give more details and explanations on it in a bit.
+In total, the model has 4 convolutional layers. The first layer has 64 filters, second has 32, third has 64 and the last one has 32 again. There are 2 MaxPooling layers placed between second and third and after last convolutional layers.
+Next, is the encoding space. First the result of the last MaxPool layer gets reshaped to (width/4, (height/4).32). Then it goes through 2 Dense layer with 64 units. I also added a dropout to avoid overfitting.
+The decoder has 2 bi-directional LSTM layers with 128 and 64 units. Each layer has 25% dropout.
+After the decoder, the layer for making the final prediction must be defined. As I said, the number of units are char_to_num.get_vocabulary() + 1 .
+The final layer is the CTC Loss layer.
+
+The next step is compiling the model and training.
+As visible in the setup part, the number of epochs is set to 150. However because of Early Stopping callback, it will end the training just before overfitting. So, the training stopped on Epoch 59 with the training loss of ~1.6 and validation loss of ~2.3. Here is a plot of the loss over 59 epochs:
+ 
+Testing and Evaluation:
+When the model training is done, the model must be tested and evaluated using the test dataset. The result of evaluation on the test dataset was roughly the same as the model performed on the validation dataset. The loss of model on eval is ~2.2.
+For doing actual prediction, a function must be defined which decodes the prediction of the model. The model predicts sequences with numerical values and they must be converted to characters:
+PREDICTIONS
+ 
+
+As you can see, the model predicted only one image incorrectly. This is an amazing result!
+
+
+
+
+
+
+                        SPECIFIC DATASET
+1. Introduction
+
+This report explores building a model for Optical Character Recognition (OCR) on two data sources: images extracted from Portable Document Format (PDF) files and text content from Word documents (DOCX). We propose leveraging a Transformer architecture built from scratch for this task.
+
+2. Approach
+2.1. Data Preprocessing
+PDF Images:
+Extract images from PDF files using libraries like PyPDF2.
+Preprocess the extracted images using techniques like grayscale conversion, noise reduction, and resizing for consistency.
+DOCX Text:
+Extract text content from DOCX files using libraries like docx.
+Clean and pre-process the extracted text (e.g., removing formatting characters or converting to lowercase).
+
+2.2. Text Preprocessing and Embedding
+Prepare the extracted text content for the Transformer decoder. This may involve:
+Tokenization: Splitting text into individual characters or sub-word units (e.g., using Byte Pair Encoding or WordPiece).
+Embedding: Mapping these tokens into numerical vectors for the Transformer to process. Pre-trained word embedding models (e.g., Word2Vec, GloVe) can be used or embeddings can be learned during training.
+
+2.3. Transformer Encoder-Decoder Model
+Encoder for Image Features:
+Develop a Transformer encoder from scratch to process the preprocessed PDF images.
+This encoder will take the image as input and transform it into a sequence of encoded features representing the visual content of the text.
+The encoder architecture may involve convolutional layers to extract local features and self-attention layers to capture relationships between different parts of the image.
+Decoder for Text Generation:
+Design a Transformer decoder to generate the character sequence corresponding to the extracted text content.
+The decoder will take the encoded features from the encoder and the embedded text tokens (or sub-word units) as input.
+It will use a combination of self-attention and encoder-decoder attention mechanisms:
+Self-attention within the decoder allows the model to focus on relevant parts of the previously generated text.
+Encoder-decoder attention enables the decoder to attend to specific parts of the encoded image features while generating the text, ensuring the predicted sequence aligns with the visual content.
+
+2.4. Training
+Train the complete Transformer model on a dataset consisting of image-text pairs (extracted images and corresponding text content from DOCX files).
+Use an appropriate optimizer (e.g., Adam) and a suitable loss function (e.g., cross-entropy loss) for training.
+
+
+2.5. Decoding
+After training, use the model to decode unseen PDF images and predict the corresponding text content.
+
+
+3. Evaluation Metrics
+Character Error Rate (CER): Measures the percentage of incorrectly recognized characters. This remains a crucial metric for OCR tasks.
+Word Error Rate (WER): Evaluates the percentage of incorrectly recognized or missing words compared to the ground truth text.
+BLEU Score (for captioning tasks): While traditionally used for image captioning, BLEU score can be relevant here if the task involves generating complete sentences or descriptions from the images. It measures the similarity between the generated text and a set of reference captions (multiple references per image are recommended for a more robust evaluation).
+
+4. Suitability of BLEU Score
+BLEU score is most effective when evaluating the quality and coherence of generated sentences or descriptions.
+For tasks focused on accurately recognizing individual characters and words, CER and WER provide a more direct measure of performance.
+Consider using BLEU score in conjunction with CER and WER for a more comprehensive evaluation, especially if the predicted text involves complete sentences or descriptions extracted from images.
+
+
+4. Advantages of this Approach
+Provides a flexible framework for building a custom OCR model tailored to the specific characteristics of the PDF images and DOCX text.
+Allows for experimentation with different encoder and decoder architectures to optimize performance.
+Enables control over the training process and hyperparameter tuning.
+5. Conclusion
+This report proposes a Transformer-based OCR model built from scratch for extracting text from PDF images and DOCX files. The model utilizes separate Transformer encoders and decoders for processing images and text content, respectively. Evaluating the model using CER, WER, and AR will provide insights into its effectiveness.
+
+7. Future Work
+Explore techniques for improving the efficiency of training the Transformer model from scratch.
+Experiment with different encoder architectures (e.g., convolutional transformers) to enhance feature extraction capabilities.
+Investigate attention visualization methods to understand how the model focuses on specific image regions while generating text.
+Implement data augmentation strategies, especially for limited training datasets, to improve modelgeneralizability.
+By refining this approach and addressing the challenges, Transformer-based OCR models built from scratch can become powerful tools for tackling diverse image-text extraction tasks.
